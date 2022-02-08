@@ -1,8 +1,8 @@
 {
 	"development": {
 		"username": "root",
-		"password": "1234",
-		"database": "group_project",
+		"password": 1234,
+		"database": "cc10_group_project",
 		"host": "127.0.0.1",
 		"dialect": "mysql"
 	},
