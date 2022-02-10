@@ -2,7 +2,7 @@ module.exports = (sequelize, DataTypes) => {
 	const User = sequelize.define(
 		"User",
 		{
-			username: {
+			name: {
 				type: DataTypes.STRING,
 				allowNull: false,
 				validate: {
@@ -12,51 +12,42 @@ module.exports = (sequelize, DataTypes) => {
 			role: {
 				type: DataTypes.STRING,
 				allowNull: false,
-				default: "USER",
+				defaultValue: "USER",
 				validate: {
 					isIn: [["USER", "ADMIN"]],
-				},
-			},
-			firstName: {
-				type: DataTypes.STRING,
-				allowNull: false,
-				validate: {
-					notEmpty: true,
-				},
-			},
-			lastName: {
-				type: DataTypes.STRING,
-				allowNull: false,
-				validate: {
-					notEmpty: true,
 				},
 			},
 			email: {
 				type: DataTypes.STRING,
 				unique: true,
-				allowNull: false,
 				validate: {
 					isEmail: true,
 				},
 			},
+			phoneNumber: {
+				type: DataTypes.STRING,
+				unique: true,
+				defaultValue: false,
+			},
+			facebookLogin: {
+				type: DataTypes.BOOLEAN,
+			},
 			password: {
 				type: DataTypes.STRING,
-				allowNull: false,
+				// allowNull: false,
 			},
 			website: {
 				type: DataTypes.STRING,
 			},
-
 			bio: {
 				type: DataTypes.STRING,
 			},
-
 			profileImg: {
 				type: DataTypes.STRING,
 			},
 		},
 		{
-			underscored: true,
+			underscored: false,
 		}
 	);
 	return User;

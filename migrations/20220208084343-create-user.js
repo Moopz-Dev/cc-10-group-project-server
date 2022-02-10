@@ -8,17 +8,16 @@ module.exports = {
 				primaryKey: true,
 				type: Sequelize.INTEGER,
 			},
-			firstName: {
-				type: Sequelize.STRING,
-				allowNull: false,
-			},
-			lastName: {
+			name: {
 				type: Sequelize.STRING,
 				allowNull: false,
 			},
 			email: {
 				type: Sequelize.STRING,
-				allowNull: false,
+				unique: true,
+			},
+			phoneNumber: {
+				type: Sequelize.STRING,
 				unique: true,
 			},
 			role: {
@@ -27,7 +26,10 @@ module.exports = {
 			},
 			password: {
 				type: Sequelize.STRING,
-				allowNull: false,
+				// allowNull: false,
+			},
+			facebookLogin: {
+				type: Sequelize.BOOLEAN,
 			},
 			pronouns: {
 				type: Sequelize.STRING,
@@ -38,8 +40,8 @@ module.exports = {
 			bio: {
 				type: Sequelize.STRING,
 			},
-			profileImgUrl: {
-				type: Sequelize.STRING,
+			profileImg: {
+				type: Sequelize.STRING(1234),
 			},
 			createdAt: {
 				allowNull: false,
