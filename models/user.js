@@ -47,7 +47,7 @@ module.exports = (sequelize, DataTypes) => {
 			},
 		},
 		{
-			underscored: false,
+			underscored: true,
 		}
 	);
 	return User;

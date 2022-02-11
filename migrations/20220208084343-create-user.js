@@ -16,7 +16,7 @@ module.exports = {
 				type: Sequelize.STRING,
 				unique: true,
 			},
-			phoneNumber: {
+			phone_number: {
 				type: Sequelize.STRING,
 				unique: true,
 			},
@@ -28,11 +28,8 @@ module.exports = {
 				type: Sequelize.STRING,
 				// allowNull: false,
 			},
-			facebookLogin: {
+			facebook_login: {
 				type: Sequelize.BOOLEAN,
-			},
-			pronouns: {
-				type: Sequelize.STRING,
 			},
 			website: {
 				type: Sequelize.STRING,
@@ -40,14 +37,14 @@ module.exports = {
 			bio: {
 				type: Sequelize.STRING,
 			},
-			profileImg: {
+			profile_img: {
 				type: Sequelize.STRING(1234),
 			},
-			createdAt: {
+			created_at: {
 				allowNull: false,
 				type: Sequelize.DATE,
 			},
-			updatedAt: {
+			updated_at: {
 				allowNull: false,
 				type: Sequelize.DATE,
 			},
