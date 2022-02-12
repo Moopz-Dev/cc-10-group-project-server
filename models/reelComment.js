@@ -1,5 +1,5 @@
-module.exports = (sequqlize, DataTypes) => {
-  const ReelComment = sequqlize.define(
+module.exports = (sequelize, DataTypes) => {
+  const ReelComment = sequelize.define(
     'ReelComment',
     {
       message: DataTypes.STRING,

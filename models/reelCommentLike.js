@@ -1,5 +1,5 @@
-module.exports = (sequqlize, DataTypes) => {
-  const ReelCommentLike = sequqlize.define(
+module.exports = (sequelize, DataTypes) => {
+  const ReelCommentLike = sequelize.define(
     'ReelCommentLike',
     {},
     {

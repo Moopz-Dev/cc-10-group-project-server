@@ -1,5 +1,5 @@
-module.exports = (sequqlize, DataTypes) => {
-  const StoryComment = sequqlize.define(
+module.exports = (sequelize, DataTypes) => {
+  const StoryComment = sequelize.define(
     'StoryComment',
     {
       message: DataTypes.STRING,
