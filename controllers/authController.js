@@ -7,39 +7,59 @@ const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
 exports.registerNewUser = async (req, res, next) => {
 	try {
-		const { email, phoneNumber, password, confirmPassword, username } =
-			req.body;
+		const {
+			email = null,
+			phoneNumber = null,
+			password,
+			confirmPassword,
+			username,
+		} = req.body;
 
 		//check for username duplication
 		const existUsername = await User.findOne({ where: { username: username } });
+		if (
+			(!email && !phoneNumber) ||
+			!password ||
+			!confirmPassword ||
+			!username
+		) {
+			return res
+				.status(400)
+				.json({ message: "One or more required fields are empty." });
+		}
 		if (existUsername) {
 			return res
 				.status(400)
 				.json({ message: "This username is already taken" });
 		}
 
-		//check for invalid email
-		const isEmail = email.match(emailRegex);
-		if (!isEmail) {
-			return res.status(400).json({ message: "Invalid Email Format." });
-		}
+		if (email) {
+			//check for invalid email
+			const isEmail = email.match(emailRegex);
+			if (!isEmail) {
+				return res.status(400).json({ message: "Invalid Email Format." });
+			}
 
-		//check for email duplication
-		const existEmail = await User.findOne({
-			where: { email: email },
-		});
-		if (existEmail) {
-			return res.status(400).json({ message: "this email is already in use" });
+			//check for email duplication
+			const existEmail = await User.findOne({
+				where: { email: email },
+			});
+			if (existEmail) {
+				return res
+					.status(400)
+					.json({ message: "this email is already in use" });
+			}
 		}
-
-		//check for phoneNumber duplication
-		const existPhone = await User.findOne({
-			where: { phoneNumber: phoneNumber },
-		});
-		if (existPhone) {
-			return res
-				.status(400)
-				.json({ message: "this Phone number is already in use" });
+		if (phoneNumber) {
+			//check for phoneNumber duplication
+			const existPhone = await User.findOne({
+				where: { phoneNumber: phoneNumber },
+			});
+			if (existPhone) {
+				return res
+					.status(400)
+					.json({ message: "this Phone number is already in use" });
+			}
 		}
 
 		if (password !== confirmPassword) {

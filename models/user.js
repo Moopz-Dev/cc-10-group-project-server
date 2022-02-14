@@ -23,11 +23,12 @@ module.exports = (sequelize, DataTypes) => {
 				validate: {
 					isEmail: true,
 				},
+				defaultValue: null,
 			},
 			phoneNumber: {
 				type: DataTypes.STRING,
 				unique: true,
-				defaultValue: false,
+				defaultValue: null,
 			},
 			facebookLogin: {
 				type: DataTypes.BOOLEAN,
