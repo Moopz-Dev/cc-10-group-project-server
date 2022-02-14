@@ -3,56 +3,61 @@ const { User } = require("../models");
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
 
-// const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
-// exports.register = async (req, res, next) => {
-// 	try {
-// 		const { email, phoneNumber, password, username } = req.body;
+exports.registerNewUser = async (req, res, next) => {
+	try {
+		const { email, phoneNumber, password, confirmPassword, username } =
+			req.body;
 
-// 		//check for username duplication
-// 		const existUsername = await User.findOne({ where: { username: username } });
-// 		if (existUsername) {
-// 			return res
-// 				.status(400)
-// 				.json({ message: "This username is already taken" });
-// 		}
+		//check for username duplication
+		const existUsername = await User.findOne({ where: { username: username } });
+		if (existUsername) {
+			return res
+				.status(400)
+				.json({ message: "This username is already taken" });
+		}
 
-// 		//check for invalid email
-// 		const isEmail = email.match(emailRegex);
-// 		if (!isEmail) {
-// 			return res.status(400).json({ message: "Invalid Email Format." });
-// 		}
+		//check for invalid email
+		const isEmail = email.match(emailRegex);
+		if (!isEmail) {
+			return res.status(400).json({ message: "Invalid Email Format." });
+		}
 
-// 		//check for email duplication
-// 		const existEmail = await User.findOne({
-// 			where: { email: email },
-// 		});
-// 		if (existEmail) {
-// 			return res.status(400).json({ message: "this email is already in use" });
-// 		}
+		//check for email duplication
+		const existEmail = await User.findOne({
+			where: { email: email },
+		});
+		if (existEmail) {
+			return res.status(400).json({ message: "this email is already in use" });
+		}
 
-// 		//check for phoneNumber duplication
-// 		const existPhone = await User.findOne({
-// 			where: { phoneNumber: phoneNumber },
-// 		});
-// 		if (existPhone) {
-// 			return res
-// 				.status(400)
-// 				.json({ message: "this Phone number is already in use" });
-// 		}
+		//check for phoneNumber duplication
+		const existPhone = await User.findOne({
+			where: { phoneNumber: phoneNumber },
+		});
+		if (existPhone) {
+			return res
+				.status(400)
+				.json({ message: "this Phone number is already in use" });
+		}
 
-// 		const hashedPassword = await bcrypt.hash(password, 10);
-// 		await User.create({
-// 			username,
-// 			phoneNumber,
-// 			email,
-// 			password: hashedPassword,
-// 		});
-// 		return res.status(201).json({ message: "user created" });
-// 	} catch (err) {
-// 		next(err);
-// 	}
-// };
+		if (password !== confirmPassword) {
+			return res.status(400).json({ message: "passwords did not match" });
+		}
+
+		const hashedPassword = await bcrypt.hash(password, 10);
+		await User.create({
+			username,
+			phoneNumber,
+			email,
+			password: hashedPassword,
+		});
+		return res.status(201).json({ message: "user created" });
+	} catch (err) {
+		next(err);
+	}
+};
 
 // exports.login = async (req, res, next) => {
 // 	try {

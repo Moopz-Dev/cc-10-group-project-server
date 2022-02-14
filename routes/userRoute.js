@@ -8,6 +8,7 @@ const router = express.Router();
 
 //register & login
 
-router.post("/facebooklogin", authController.facebookLogin);
+router.post("/auth/facebooklogin", authController.facebookLogin);
+router.post("/auth/register", authController.registerNewUser);
 
 module.exports = router;
