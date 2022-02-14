@@ -10,6 +10,12 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   StoryComment.associate = (models) => {
+    StoryComment.hasMany(models.StoryCommentLike, {
+      foreignKey: {
+        name: 'storyCommentId',
+        allowNull: false,
+      },
+    });
     StoryComment.belongsTo(models.User, {
       foreignKey: {
         name: 'userId',

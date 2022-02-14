@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
-  const ReelComment = sequelize.define(
-    'ReelComment',
+  const PostComment = sequelize.define(
+    'PostComment',
     {
       message: DataTypes.STRING,
     },
@@ -9,27 +9,28 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  ReelComment.associate = (models) => {
-    ReelComment.hasMany(models.ReelCommentLike, {
+  PostComment.associate = (models) => {
+    PostComment.hasMany(models.PostCommentLike, {
       foreignKey: {
-        name: 'reelCommentId',
+        name: 'postCommentId',
         allowNull: false,
       },
     });
-    ReelComment.belongsTo(models.User, {
+
+    PostComment.belongsTo(models.User, {
       foreignKey: {
         name: 'userId',
         allowNull: false,
       },
     });
 
-    ReelComment.belongsTo(models.Reel, {
+    PostComment.belongsTo(models.Post, {
       foreignKey: {
-        name: 'reelId',
+        name: 'postId',
         allowNull: false,
       },
     });
   };
 
-  return ReelComment;
+  return PostComment;
 };
