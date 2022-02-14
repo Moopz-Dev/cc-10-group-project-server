@@ -40,6 +40,9 @@ module.exports = {
 			profile_img: {
 				type: Sequelize.STRING(1234),
 			},
+			public_status: {
+				type: Sequelize.STRING,
+			},
 			created_at: {
 				allowNull: false,
 				type: Sequelize.DATE,

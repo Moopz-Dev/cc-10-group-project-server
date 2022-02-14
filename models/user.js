@@ -46,6 +46,13 @@ module.exports = (sequelize, DataTypes) => {
 			profileImg: {
 				type: DataTypes.STRING,
 			},
+			publicStatus: {
+				type: DataTypes.STRING,
+				defaultValue: "PRIVATE",
+				validate: {
+					isIn: [["PRIVATE", "PUBLIC"]],
+				},
+			},
 		},
 		{
 			underscored: true,
