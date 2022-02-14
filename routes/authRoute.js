@@ -10,5 +10,6 @@ const router = express.Router();
 
 router.post("/auth/facebooklogin", authController.facebookLogin);
 router.post("/auth/register", authController.registerNewUser);
+router.post("/auth/login", authController.login);
 
 module.exports = router;

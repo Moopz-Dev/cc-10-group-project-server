@@ -2,8 +2,10 @@ const bcrypt = require("bcryptjs");
 const { User } = require("../models");
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
+const { Op } = require("sequelize");
 
 const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+// const phoneNumberRegex =
 
 exports.registerNewUser = async (req, res, next) => {
 	try {
@@ -67,55 +69,73 @@ exports.registerNewUser = async (req, res, next) => {
 		}
 
 		const hashedPassword = await bcrypt.hash(password, 10);
-		await User.create({
+
+		const user = await User.create({
 			username,
 			phoneNumber,
 			email,
 			password: hashedPassword,
 		});
-		return res.status(201).json({ message: "user created" });
+		const payload = {
+			id: user.id,
+			username: user.username,
+			role: user.role,
+		};
+		const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
+			expiresIn: 60 * 60 * 24 * 30 * 1000,
+		});
+		return res
+			.status(200)
+			.json({ token, user: { username: user.username, role: user.role } });
 	} catch (err) {
 		next(err);
 	}
 };
 
-// exports.login = async (req, res, next) => {
-// 	try {
-// 		const { emailOrPhoneNumber, password } = req.body;
-// 		const isEmail = emailOrPhoneNumber.match(emailRegex);
-// 		let user;
-// 		if (isEmail) {
-// 			user = await User.findOne({ where: { email: emailOrPhoneNumber } });
-// 		} else {
-// 			user = await User.findOne({ where: { phoneNumber: emailOrPhoneNumber } });
-// 		}
-// 		if (!user) {
-// 			return res
-// 				.status(400)
-// 				.json({ message: "invalid email, phone number or password" });
-// 		}
-// 		const isMatch = await bcrypt.compare(password, user.password);
-// 		if (!isMatch) {
-// 			return res
-// 				.status(400)
-// 				.json({ message: "invalid email, phone number or password" });
-// 		}
+exports.login = async (req, res, next) => {
+	try {
+		const { usernameOrPhoneNumberOrEmail, password } = req.body;
+		if (!usernameOrPhoneNumberOrEmail || !password) {
+			return res.status(400).json({ message: "One or more fields are empty." });
+		}
 
-// 		const payload = {
-// 			id: user.id,
-// 			username: user.username,
-// 			role: user.role,
-// 		};
-// 		const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
-// 			expiresIn: 60 * 60 * 24 * 30 * 1000,
-// 		});
-// 		return res
-// 			.status(200)
-// 			.json({ token, user: { username: user.username, role: user.role } });
-// 	} catch (err) {
-// 		next(err);
-// 	}
-// };
+		const user = await User.findOne({
+			where: {
+				[Op.or]: [
+					{ username: usernameOrPhoneNumberOrEmail },
+					{ phoneNumber: usernameOrPhoneNumberOrEmail },
+					{ email: usernameOrPhoneNumberOrEmail },
+				],
+			},
+		});
+
+		if (!user) {
+			return res
+				.status(400)
+				.json({ message: "invalid email, phone number or password" });
+		}
+		const isMatch = await bcrypt.compare(password, user.password);
+		if (!isMatch) {
+			return res
+				.status(400)
+				.json({ message: "invalid email, phone number or password" });
+		}
+
+		const payload = {
+			id: user.id,
+			username: user.username,
+			role: user.role,
+		};
+		const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
+			expiresIn: 60 * 60 * 24 * 30 * 1000,
+		});
+		return res
+			.status(200)
+			.json({ token, user: { username: user.username, role: user.role } });
+	} catch (err) {
+		next(err);
+	}
+};
 
 // exports.getMe = async (req, res, next) => {
 // 	try {
