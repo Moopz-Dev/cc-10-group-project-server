@@ -56,7 +56,7 @@ exports.unFollowUser = async (req, res, next) => {
 	}
 };
 
-exports.getFollowersCount = (req, res, next) => {
+exports.getFollowersCount = async (req, res, next) => {
 	try {
 		const { id } = req.params;
 		const target = await User.findOne({ where: { id } });
@@ -72,7 +72,7 @@ exports.getFollowersCount = (req, res, next) => {
 	}
 };
 
-exports.getFollowingCount = (req, res, next) => {
+exports.getFollowingCount = async (req, res, next) => {
 	try {
 		const { id } = req.params;
 		const target = await User.findOne({ where: { id } });
