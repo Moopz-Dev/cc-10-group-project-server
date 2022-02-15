@@ -12,7 +12,7 @@ app.use(morgan("tiny"));
 app.use(cors());
 
 // routes
-fs.readdirSync("./routes").map(r => app.use("/api", require("./routes/" + r)));
+fs.readdirSync("./routes").map(r => app.use("", require("./routes/" + r)));
 
 //error handling
 app.use((req, res) => {
