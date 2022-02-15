@@ -151,7 +151,7 @@ exports.updatePostMedia = async (req, res, next) => {
   }
 };
 
-exports.delete = async (req, res, next) => {
+exports.deletePost = async (req, res, next) => {
   try {
     const { id } = req.params;
     const user = await User.findOne({ where: { id: req.user.id } });

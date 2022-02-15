@@ -15,6 +15,6 @@ router.get(
 router.post('/posts/', authenticateUser, postController.createPost);
 router.patch('/posts/:id', authenticateUser, postController.updatePost);
 router.patch('/posts/:id', authenticateUser, postController.updatePostMedia);
-router.delete('/posts/:id', authenticateUser, postController.delete);
+router.delete('/posts/:id', authenticateUser, postController.deletePost);
 
 module.exports = router;
