@@ -1,14 +1,14 @@
 const {
   User,
-  Story,
-  StoryLike,
-  StoryComment,
-  StoryCommentLike,
+  Post,
+  PostMedia,
+  PostComment,
+  PostLike,
+  PostCommentLike,
   Follow,
 } = require('../models');
-const { Op } = require('sequelize');
 
-exports.getAllStories = async (req, res, next) => {
+exports.getAllPosts = async (req, res, next) => {
   try {
     const user = await User.findOne({ where: { id: req.user.id } });
     const publicUsers = await User.findAll({
@@ -17,7 +17,7 @@ exports.getAllStories = async (req, res, next) => {
     let targets = publicUsers;
     if (user) {
       const followers = await Follow.findAll({
-        where: { followTarget: req.user.id },
+        where: { followtarget: req.user.id },
         attribute: ['follower'],
       });
 
@@ -30,16 +30,16 @@ exports.getAllStories = async (req, res, next) => {
       targets = [...publicUsers, ...friends];
     }
 
-    const stories = await Story.findAll({
+    const posts = await Post.findAll({
       where: {
         userId: targets.map((item) => item.id),
         include: [
           {
-            model: StoryLike,
+            model: PostLike,
           },
           {
-            model: StoryComment,
-            include: { model: StoryCommentLike },
+            model: PostComment,
+            include: { model: PostCommentLike },
           },
           {
             model: User,
@@ -47,13 +47,13 @@ exports.getAllStories = async (req, res, next) => {
         ],
       },
     });
-    res.status(200).json(stories);
-  } catch (error) {
-    next(error);
+    res.status(200).json(posts);
+  } catch (err) {
+    next(err);
   }
 };
 
-exports.getUserStories = async (req, res, next) => {
+module.exports.getUserPosts = async (req, res, next) => {
   try {
     const user = await User.findOne({ where: { id: req.user.id } });
     const { userId } = req.params;
@@ -76,6 +76,7 @@ exports.getUserStories = async (req, res, next) => {
       });
       targets = [...publicUsers, ...friends];
     }
+
     const target = await targets.findOne({ where: { id: userId } });
     if (!target) {
       return res.status(400).json({
@@ -83,64 +84,99 @@ exports.getUserStories = async (req, res, next) => {
       });
     }
     res.status(200).json(target);
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 };
 
-exports.createStory = async (req, res, next) => {
+exports.createPost = async (req, res, next) => {
   try {
     const { message, media } = req.body;
     const user = await User.findOne({ where: { id: req.user.id } });
     if (!user) {
       return res.status(400).json({ message: 'this user does not exist.' });
     }
-    const story = await Story.create({ message, media, userId: user.id });
-    res.status(201).json(story);
+    const post = await Post.create({ message, userId: user.id });
+    if (media) {
+      const postMedia = await PostMedia.create({ media, userId: user.id });
+      res.status(201).json(postMedia);
+    }
+    res.status(201).json(post);
   } catch (error) {
     next(error);
   }
 };
 
-exports.updateStory = async (req, res, next) => {
+exports.updatePost = async (req, res, next) => {
   try {
-    const { message, media } = req.body;
+    const { message } = req.body;
     const { id } = req.params;
     const user = await User.findOne({ where: { id: req.user.id } });
     if (!user) {
       return res.status(400).json({ message: 'this user does not exist.' });
     }
-    const story = await Story.findOne({ where: { id } });
-    if (!story) {
-      return res.status(400).json({ message: 'this story does not exist.' });
+    const post = await Post.findOne({ where: { id } });
+    if (!post) {
+      return res.status(400).json({ message: 'this post does not exist.' });
     }
-    if (story.userId !== user.id) {
+    if (post.userId !== user.id) {
       return res.status(403).json({ message: 'Unauthorized request' });
     }
-    await Story.update({ message, media });
-    res.status(200).json(story);
+    await Post.update({ message });
+    res.status(200).json(post);
   } catch (error) {
     next(error);
   }
 };
 
-exports.deleteStory = async (req, res, next) => {
+exports.updatePostMedia = async (req, res, next) => {
+  try {
+    const { media } = req.body;
+    const { id } = req.params;
+    const user = await User.findOne({ where: { id: req.user.id } });
+    if (!user) {
+      return res.status(400).json({ message: 'this user does not exist.' });
+    }
+    const postMedia = await PostMedia.findOne({ where: { id } });
+    if (!postMedia) {
+      return res.status(400).json({ message: 'this media does not exist.' });
+    }
+    if (postMedia.userId !== user.id) {
+      return res.status(403).json({ message: 'Unauthorized request' });
+    }
+    await PostMedia.update({ media });
+    res.status(200).json(postMedia);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.delete = async (req, res, next) => {
   try {
     const { id } = req.params;
     const user = await User.findOne({ where: { id: req.user.id } });
     if (!user) {
       return res.status(400).json({ message: 'this user does not exist.' });
     }
-    const story = await Story.findOne({ where: { id } });
-    if (!story) {
-      return res.status(400).json({ message: 'this story does not exist.' });
+    const post = await Post.findOne({ where: { id } });
+    if (!post) {
+      return res.status(400).json({ message: 'this post does not exist.' });
     }
-    if (story.userId !== user.id) {
+    if (post.userId !== user.id) {
       return res.status(403).json({ message: 'Unauthorized request' });
     }
-    await Story.delete();
+
+    await PostLike.destroy({ where: { postId: id } }, { transaction });
+    await PostComment.destroy({ where: { postId: id } }, { transaction });
+    await PostCommentLike.destroy(
+      { where: { postCommentId: { where: { postId: id } } } },
+      { transaction }
+    );
+    await Post.destroy({ where: { id } }, { transaction });
+    await transaction.commit();
     res.status(204).json();
   } catch (error) {
+    await transaction.rollback();
     next(error);
   }
 };
