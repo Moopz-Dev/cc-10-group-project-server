@@ -17,8 +17,6 @@ exports.registerNewUser = async (req, res, next) => {
 			username,
 		} = req.body;
 
-		//check for username duplication
-		const existUsername = await User.findOne({ where: { username: username } });
 		if (
 			(!email && !phoneNumber) ||
 			!password ||
@@ -28,7 +26,9 @@ exports.registerNewUser = async (req, res, next) => {
 			return res
 				.status(400)
 				.json({ message: "One or more required fields are empty." });
+			//check for username duplication
 		}
+		const existUsername = await User.findOne({ where: { username: username } });
 		if (existUsername) {
 			return res
 				.status(400)
@@ -108,7 +108,9 @@ exports.login = async (req, res, next) => {
 				],
 			},
 		});
-
+		if (user.facebookLogin) {
+			return res.status(400).json({ message: "Please login with Facebook" });
+		}
 		if (!user) {
 			return res
 				.status(400)
