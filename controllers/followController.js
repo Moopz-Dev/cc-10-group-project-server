@@ -13,7 +13,7 @@ exports.followUser = async (req, res, next) => {
 			return res.status(400).json({ message: "the target does not exist" });
 		}
 		const alreadyFollow = await Follow.findOne({
-			where: { followTargetId: target.id, followId: user.id },
+			where: { followTargetId: target.id, followerId: user.id },
 		});
 		if (alreadyFollow) {
 			return res
@@ -22,7 +22,7 @@ exports.followUser = async (req, res, next) => {
 		}
 		const result = await Follow.create({
 			followTargetId: target.id,
-			followId: user.id,
+			followerId: user.id,
 		});
 		res.status(201).json(result);
 	} catch (error) {
@@ -42,14 +42,14 @@ exports.unFollowUser = async (req, res, next) => {
 			return res.status(400).json({ message: "the target does not exist" });
 		}
 		const alreadyFollow = await Follow.findOne({
-			where: { followTargetId: target.id, followId: user.id },
+			where: { followTargetId: target.id, followerId: user.id },
 		});
 		if (!alreadyFollow) {
 			return res
 				.status(400)
 				.json({ message: "Bad request, you are not this user's follower" });
 		}
-		await alreadyFollow.delete();
+		await alreadyFollow.destroy();
 		res.status(204).json();
 	} catch (error) {
 		next(error);

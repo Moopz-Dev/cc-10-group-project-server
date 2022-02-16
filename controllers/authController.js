@@ -139,16 +139,16 @@ exports.login = async (req, res, next) => {
 	}
 };
 
-// exports.getMe = async (req, res, next) => {
-// 	try {
-// 		const { username, role, email, phoneNumber } = req.user;
-// 		res.status(200).json({
-// 			user: { username, role, email, phoneNumber },
-// 		});
-// 	} catch (err) {
-// 		next(err);
-// 	}
-// };
+exports.getMe = async (req, res, next) => {
+	try {
+		const { username, role } = req.user;
+		res.status(200).json({
+			user: { username, role },
+		});
+	} catch (err) {
+		next(err);
+	}
+};
 
 exports.facebookLogin = async (req, res, next) => {
 	try {

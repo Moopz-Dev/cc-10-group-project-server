@@ -14,7 +14,7 @@ passport.use(
 			if (!user) {
 				return done(null, false);
 			}
-			if (user.role !== "user") {
+			if (user.role !== "USER") {
 				return done(null, false);
 			}
 			done(null, user);
@@ -32,7 +32,7 @@ passport.use(
 			if (!user) {
 				return done(null, false);
 			}
-			if (user.role !== "admin") {
+			if (user.role !== "ADMIN") {
 				return done(null, false);
 			}
 			done(null, user);

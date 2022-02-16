@@ -12,4 +12,6 @@ router.post("/auth/facebooklogin", authController.facebookLogin);
 router.post("/auth/register", authController.registerNewUser);
 router.post("/auth/login", authController.login);
 
+router.get("/user/me", authenticateAdminOrUser, authController.getMe);
+
 module.exports = router;

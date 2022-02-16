@@ -50,6 +50,7 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			publicStatus: {
 				type: DataTypes.STRING,
+				allowNull: false,
 				defaultValue: "PRIVATE",
 				validate: {
 					isIn: [["PRIVATE", "PUBLIC"]],
