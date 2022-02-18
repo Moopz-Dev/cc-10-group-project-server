@@ -13,19 +13,27 @@ exports.getAllReels = async (req, res, next) => {
     const user = await User.findOne({ where: { id: req.user.id } });
     const publicUsers = await User.findAll({
       where: { publicStatus: 'PUBLIC' },
+      raw: true,
     });
     let targets = publicUsers;
     if (user) {
       const followers = await Follow.findAll({
         where: { followTarget: req.user.id },
+        raw: true,
         attribute: ['follower'],
       });
 
-      const friends = await Follow.findAll({
+      let friends = await Follow.findAll({
         where: {
-          followTarget: followers.map((item) => item.follower),
-          followers: req.user.id,
+          followTargetId: followers.map((item) => item.followerId),
+          followerId: req.user.id,
         },
+        raw: true,
+      });
+
+      friends = await User.findAll({
+        where: { id: friends.map((item) => item.followTargetId) },
+        raw: true,
       });
       targets = [...publicUsers, ...friends];
     }
@@ -33,19 +41,20 @@ exports.getAllReels = async (req, res, next) => {
     const reels = await Reel.findAll({
       where: {
         userId: targets.map((item) => item.id),
-        include: [
-          {
-            model: ReelLike,
-          },
-          {
-            model: ReelComment,
-            include: { model: ReelCommentLike },
-          },
-          {
-            model: User,
-          },
-        ],
       },
+      include: [
+        {
+          model: ReelLike,
+        },
+        {
+          model: ReelComment,
+          include: { model: ReelCommentLike },
+        },
+        {
+          model: User,
+          attribute: ['id', 'username', 'profileImg'],
+        },
+      ],
     });
     res.status(200).json(reels);
   } catch (error) {
@@ -60,28 +69,39 @@ exports.getUserReels = async (req, res, next) => {
 
     const publicUsers = await User.findAll({
       where: { publicStatus: 'PUBLIC' },
+      raw: true,
     });
     let targets = publicUsers;
     if (user) {
       const followers = await Follow.findAll({
         where: { followTarget: req.user.id },
+        raw: true,
         attribute: ['follower'],
       });
 
-      const friends = await Follow.findAll({
+      let friends = await Follow.findAll({
         where: {
-          followTarget: followers.map((item) => item.follower),
-          followers: req.user.id,
+          followTargetId: followers.map((item) => item.followerId),
+          followerId: req.user.id,
         },
+        raw: true,
+      });
+
+      friends = await User.findAll({
+        where: { id: friends.map((item) => item.followTargetId) },
+        raw: true,
       });
       targets = [...publicUsers, ...friends];
     }
-    const target = await targets.findOne({ where: { id: userId } });
-    if (!target) {
+
+    const canView = targets.filter((item) => item.id == userId);
+
+    if (canView.length === 0) {
       return res.status(400).json({
         message: 'Only friends can view your target, or they do not exist',
       });
     }
+    const target = await Reel.findAll({ where: { id: userId } });
     res.status(200).json(target);
   } catch (error) {
     next(error);
@@ -117,7 +137,7 @@ exports.updateReel = async (req, res, next) => {
     if (reel.userId !== user.id) {
       return res.status(403).json({ message: 'Unauthorized request' });
     }
-    await Reel.update({ message, media });
+    await Reel.update({ message });
     res.status(200).json(reel);
   } catch (error) {
     next(error);
@@ -138,7 +158,7 @@ exports.deleteReel = async (req, res, next) => {
     if (reel.userId !== user.id) {
       return res.status(403).json({ message: 'Unauthorized request' });
     }
-    await Reel.delete();
+    await reel.delete();
     res.status(204).json();
   } catch (error) {
     next(error);
