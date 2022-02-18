@@ -13,19 +13,27 @@ exports.getAllPosts = async (req, res, next) => {
     const user = await User.findOne({ where: { id: req.user.id } });
     const publicUsers = await User.findAll({
       where: { publicStatus: 'PUBLIC' },
+      raw: true,
     });
     let targets = publicUsers;
     if (user) {
       const followers = await Follow.findAll({
         where: { followtarget: req.user.id },
+        raw: true,
         attribute: ['follower'],
       });
 
-      const friends = await Follow.findAll({
+      let friends = await Follow.findAll({
         where: {
-          followTarget: followers.map((item) => item.follower),
-          followers: req.user.id,
+          followTargetId: followers.map((item) => item.followerId),
+          followerId: req.user.id,
         },
+        raw: true,
+      });
+
+      friends = await User.findAll({
+        where: { id: friends.map((item) => item.followTargetId) },
+        raw: true,
       });
       targets = [...publicUsers, ...friends];
     }
@@ -33,19 +41,20 @@ exports.getAllPosts = async (req, res, next) => {
     const posts = await Post.findAll({
       where: {
         userId: targets.map((item) => item.id),
-        include: [
-          {
-            model: PostLike,
-          },
-          {
-            model: PostComment,
-            include: { model: PostCommentLike },
-          },
-          {
-            model: User,
-          },
-        ],
       },
+      include: [
+        {
+          model: PostLike,
+        },
+        {
+          model: PostComment,
+          include: { model: PostCommentLike },
+        },
+        {
+          model: User,
+          attributes: ['id', 'username', 'profileImg'],
+        },
+      ],
     });
     res.status(200).json(posts);
   } catch (err) {
@@ -60,29 +69,38 @@ module.exports.getUserPosts = async (req, res, next) => {
 
     const publicUsers = await User.findAll({
       where: { publicStatus: 'PUBLIC' },
+      raw: true,
     });
     let targets = publicUsers;
     if (user) {
       const followers = await Follow.findAll({
         where: { followTarget: req.user.id },
+        raw: true,
         attribute: ['follower'],
       });
 
-      const friends = await Follow.findAll({
+      let friends = await Follow.findAll({
         where: {
-          followTarget: followers.map((item) => item.follower),
-          followers: req.user.id,
+          followTargetId: followers.map((item) => item.followerId),
+          followerId: req.user.id,
         },
+        raw: true,
+      });
+
+      friends = await User.findAll({
+        where: { id: friends.map((item) => item.followTargetId) },
+        raw: true,
       });
       targets = [...publicUsers, ...friends];
     }
 
-    const target = await targets.findOne({ where: { id: userId } });
-    if (!target) {
+    const canView = targets.filter((item) => item.id == userId);
+    if (canView.length === 0) {
       return res.status(400).json({
         message: 'Only friends can view your target, or they do not exist',
       });
     }
+    const target = await Post.findAll({ where: { id: userId } });
     res.status(200).json(target);
   } catch (err) {
     next(err);
@@ -90,19 +108,40 @@ module.exports.getUserPosts = async (req, res, next) => {
 };
 
 exports.createPost = async (req, res, next) => {
+  const transaction = await sequelize.transaction();
   try {
     const { message, media } = req.body;
     const user = await User.findOne({ where: { id: req.user.id } });
     if (!user) {
       return res.status(400).json({ message: 'this user does not exist.' });
     }
-    const post = await Post.create({ message, userId: user.id });
-    if (media) {
-      const postMedia = await PostMedia.create({ media, userId: user.id });
-      res.status(201).json(postMedia);
-    }
+    const post = await Post.create(
+      { message, userId: user.id },
+      { transaction }
+    );
     res.status(201).json(post);
+
+    const newPostMedia = media.map((item) => ({
+      ...item,
+      postId: post.userId,
+    }));
+    await PostMedia.bulkCreate(newPostMedia, { transaction });
+    await transaction.commit();
+
+    const returnPostMedia = await Post.findOne({
+      where: { id: post.id },
+      attribute: { exclude: ['createdAt', 'updatedAt'] },
+      include: [
+        { model: User, attribute: ['username', 'profileImg', 'publicStatus'] },
+        {
+          model: PostMedia,
+          attribute: ['media'],
+        },
+      ],
+    });
+    res.status(201).json({ post: returnPostMedia });
   } catch (error) {
+    await transaction.rollback();
     next(error);
   }
 };
@@ -122,7 +161,7 @@ exports.updatePost = async (req, res, next) => {
     if (post.userId !== user.id) {
       return res.status(403).json({ message: 'Unauthorized request' });
     }
-    await Post.update({ message });
+    await post.update({ message });
     res.status(200).json(post);
   } catch (error) {
     next(error);
@@ -144,7 +183,7 @@ exports.updatePostMedia = async (req, res, next) => {
     if (postMedia.userId !== user.id) {
       return res.status(403).json({ message: 'Unauthorized request' });
     }
-    await PostMedia.update({ media });
+    await postMedia.update({ media });
     res.status(200).json(postMedia);
   } catch (error) {
     next(error);
