@@ -3,6 +3,10 @@ module.exports = (sequelize, DataTypes) => {
     'Reel',
     {
       message: DataTypes.STRING,
+      media: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
     },
     {
       underscored: true,

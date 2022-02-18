@@ -6,6 +6,7 @@ const {
   PostLike,
   PostCommentLike,
   Follow,
+  sequelize,
 } = require('../models');
 
 exports.getAllPosts = async (req, res, next) => {
@@ -192,6 +193,7 @@ exports.updatePostMedia = async (req, res, next) => {
 
 exports.deletePost = async (req, res, next) => {
   try {
+    const transaction = await sequelize.transaction();
     const { id } = req.params;
     const user = await User.findOne({ where: { id: req.user.id } });
     if (!user) {
@@ -206,12 +208,12 @@ exports.deletePost = async (req, res, next) => {
     }
 
     await PostLike.destroy({ where: { postId: id } }, { transaction });
-    await PostComment.destroy({ where: { postId: id } }, { transaction });
     await PostCommentLike.destroy(
       { where: { postCommentId: { where: { postId: id } } } },
       { transaction }
     );
-    await Post.destroy({ where: { id } }, { transaction });
+    await PostComment.destroy({ where: { postId: id } }, { transaction });
+    await post.destroy({ transaction });
     await transaction.commit();
     res.status(204).json();
   } catch (error) {

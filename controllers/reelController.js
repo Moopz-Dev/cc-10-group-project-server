@@ -5,6 +5,7 @@ const {
   ReelComment,
   ReelCommentLike,
   Follow,
+  sequelize,
 } = require('../models');
 const { Op } = require('sequelize');
 
@@ -110,12 +111,12 @@ exports.getUserReels = async (req, res, next) => {
 
 exports.createReel = async (req, res, next) => {
   try {
-    const { message } = req.body;
+    const { message, media } = req.body;
     const user = await User.findOne({ where: { id: req.user.id } });
     if (!user) {
       return res.status(400).json({ message: 'this user does not exist.' });
     }
-    const reel = await Reel.create({ message, userId: user.id });
+    const reel = await Reel.create({ message, media, userId: user.id });
     res.status(201).json(reel);
   } catch (error) {
     next(error);
@@ -124,7 +125,7 @@ exports.createReel = async (req, res, next) => {
 
 exports.updateReel = async (req, res, next) => {
   try {
-    const { message } = req.body;
+    const { message, media } = req.body;
     const { id } = req.params;
     const user = await User.findOne({ where: { id: req.user.id } });
     if (!user) {
@@ -137,7 +138,7 @@ exports.updateReel = async (req, res, next) => {
     if (reel.userId !== user.id) {
       return res.status(403).json({ message: 'Unauthorized request' });
     }
-    await Reel.update({ message });
+    await Reel.update({ message, media });
     res.status(200).json(reel);
   } catch (error) {
     next(error);
@@ -146,6 +147,7 @@ exports.updateReel = async (req, res, next) => {
 
 exports.deleteReel = async (req, res, next) => {
   try {
+    const transaction = await sequelize.transaction();
     const { id } = req.params;
     const user = await User.findOne({ where: { id: req.user.id } });
     if (!user) {
@@ -158,9 +160,18 @@ exports.deleteReel = async (req, res, next) => {
     if (reel.userId !== user.id) {
       return res.status(403).json({ message: 'Unauthorized request' });
     }
-    await reel.delete();
+
+    await ReelLike.destroy({ where: { reelId: id } }, { transaction });
+    await ReelCommentLike.destroy(
+      { where: { reelCommentId: { where: { reelId: id } } } },
+      { transaction }
+    );
+    await ReelComment.destroy({ where: { reelId: id } }, { transaction });
+    await reel.destroy({ transaction });
+    await transaction.commit();
     res.status(204).json();
   } catch (error) {
+    await transaction.rollback();
     next(error);
   }
 };
