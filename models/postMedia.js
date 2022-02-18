@@ -10,13 +10,6 @@ module.exports = (sequelize, DataTypes) => {
 	);
 
 	PostMedia.associate = models => {
-		PostMedia.belongsTo(models.User, {
-			foreignKey: {
-				name: "userId",
-				allowNull: false,
-			},
-		});
-
 		PostMedia.belongsTo(models.Post, {
 			foreignKey: {
 				name: "postId",
