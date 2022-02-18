@@ -5,6 +5,7 @@ const {
   ReelComment,
   ReelCommentLike,
   Follow,
+  sequelize,
 } = require('../models');
 const { Op } = require('sequelize');
 
@@ -13,19 +14,27 @@ exports.getAllReels = async (req, res, next) => {
     const user = await User.findOne({ where: { id: req.user.id } });
     const publicUsers = await User.findAll({
       where: { publicStatus: 'PUBLIC' },
+      raw: true,
     });
     let targets = publicUsers;
     if (user) {
       const followers = await Follow.findAll({
         where: { followTarget: req.user.id },
+        raw: true,
         attribute: ['follower'],
       });
 
-      const friends = await Follow.findAll({
+      let friends = await Follow.findAll({
         where: {
-          followTarget: followers.map((item) => item.follower),
-          followers: req.user.id,
+          followTargetId: followers.map((item) => item.followerId),
+          followerId: req.user.id,
         },
+        raw: true,
+      });
+
+      friends = await User.findAll({
+        where: { id: friends.map((item) => item.followTargetId) },
+        raw: true,
       });
       targets = [...publicUsers, ...friends];
     }
@@ -33,19 +42,20 @@ exports.getAllReels = async (req, res, next) => {
     const reels = await Reel.findAll({
       where: {
         userId: targets.map((item) => item.id),
-        include: [
-          {
-            model: ReelLike,
-          },
-          {
-            model: ReelComment,
-            include: { model: ReelCommentLike },
-          },
-          {
-            model: User,
-          },
-        ],
       },
+      include: [
+        {
+          model: ReelLike,
+        },
+        {
+          model: ReelComment,
+          include: { model: ReelCommentLike },
+        },
+        {
+          model: User,
+          attribute: ['id', 'username', 'profileImg'],
+        },
+      ],
     });
     res.status(200).json(reels);
   } catch (error) {
@@ -60,28 +70,39 @@ exports.getUserReels = async (req, res, next) => {
 
     const publicUsers = await User.findAll({
       where: { publicStatus: 'PUBLIC' },
+      raw: true,
     });
     let targets = publicUsers;
     if (user) {
       const followers = await Follow.findAll({
         where: { followTarget: req.user.id },
+        raw: true,
         attribute: ['follower'],
       });
 
-      const friends = await Follow.findAll({
+      let friends = await Follow.findAll({
         where: {
-          followTarget: followers.map((item) => item.follower),
-          followers: req.user.id,
+          followTargetId: followers.map((item) => item.followerId),
+          followerId: req.user.id,
         },
+        raw: true,
+      });
+
+      friends = await User.findAll({
+        where: { id: friends.map((item) => item.followTargetId) },
+        raw: true,
       });
       targets = [...publicUsers, ...friends];
     }
-    const target = await targets.findOne({ where: { id: userId } });
-    if (!target) {
+
+    const canView = targets.filter((item) => item.id == userId);
+
+    if (canView.length === 0) {
       return res.status(400).json({
         message: 'Only friends can view your target, or they do not exist',
       });
     }
+    const target = await Reel.findAll({ where: { id: userId } });
     res.status(200).json(target);
   } catch (error) {
     next(error);
@@ -90,12 +111,12 @@ exports.getUserReels = async (req, res, next) => {
 
 exports.createReel = async (req, res, next) => {
   try {
-    const { message } = req.body;
+    const { message, media } = req.body;
     const user = await User.findOne({ where: { id: req.user.id } });
     if (!user) {
       return res.status(400).json({ message: 'this user does not exist.' });
     }
-    const reel = await Reel.create({ message, userId: user.id });
+    const reel = await Reel.create({ message, media, userId: user.id });
     res.status(201).json(reel);
   } catch (error) {
     next(error);
@@ -104,7 +125,7 @@ exports.createReel = async (req, res, next) => {
 
 exports.updateReel = async (req, res, next) => {
   try {
-    const { message } = req.body;
+    const { message, media } = req.body;
     const { id } = req.params;
     const user = await User.findOne({ where: { id: req.user.id } });
     if (!user) {
@@ -126,6 +147,7 @@ exports.updateReel = async (req, res, next) => {
 
 exports.deleteReel = async (req, res, next) => {
   try {
+    const transaction = await sequelize.transaction();
     const { id } = req.params;
     const user = await User.findOne({ where: { id: req.user.id } });
     if (!user) {
@@ -138,9 +160,18 @@ exports.deleteReel = async (req, res, next) => {
     if (reel.userId !== user.id) {
       return res.status(403).json({ message: 'Unauthorized request' });
     }
-    await Reel.delete();
+
+    await ReelLike.destroy({ where: { reelId: id } }, { transaction });
+    await ReelCommentLike.destroy(
+      { where: { reelCommentId: { where: { reelId: id } } } },
+      { transaction }
+    );
+    await ReelComment.destroy({ where: { reelId: id } }, { transaction });
+    await reel.destroy({ transaction });
+    await transaction.commit();
     res.status(204).json();
   } catch (error) {
+    await transaction.rollback();
     next(error);
   }
 };
