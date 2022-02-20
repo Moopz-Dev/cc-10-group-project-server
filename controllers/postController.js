@@ -55,6 +55,9 @@ exports.getAllPosts = async (req, res, next) => {
 					model: User,
 					attributes: ["id", "username", "profileImg"],
 				},
+				{
+					model: PostMedia,
+				},
 			],
 		});
 		res.status(200).json(posts);
