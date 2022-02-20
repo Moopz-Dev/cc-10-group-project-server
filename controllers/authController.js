@@ -142,9 +142,9 @@ exports.login = async (req, res, next) => {
 
 exports.getMe = async (req, res, next) => {
 	try {
-		const { username, role } = req.user;
+		const { username, role, id } = req.user;
 		res.status(200).json({
-			user: { username, role },
+			user: { username, role, id },
 		});
 	} catch (err) {
 		next(err);
