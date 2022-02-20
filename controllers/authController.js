@@ -95,6 +95,7 @@ exports.registerNewUser = async (req, res, next) => {
 exports.login = async (req, res, next) => {
 	try {
 		const { usernameOrPhoneNumberOrEmail, password } = req.body;
+		console.log(req.body);
 		if (!usernameOrPhoneNumberOrEmail || !password) {
 			return res.status(400).json({ message: "One or more fields are empty." });
 		}
@@ -141,9 +142,9 @@ exports.login = async (req, res, next) => {
 
 exports.getMe = async (req, res, next) => {
 	try {
-		const { username, role } = req.user;
+		const { username, role, id } = req.user;
 		res.status(200).json({
-			user: { username, role },
+			user: { username, role, id },
 		});
 	} catch (err) {
 		next(err);
