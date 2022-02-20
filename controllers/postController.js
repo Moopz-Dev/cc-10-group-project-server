@@ -19,7 +19,7 @@ exports.getAllPosts = async (req, res, next) => {
 		let targets = publicUsers;
 		if (user) {
 			const followers = await Follow.findAll({
-				where: { followtargetId: req.user.id },
+				where: { followTargetId: req.user.id },
 				raw: true,
 				attribute: ["follower"],
 			});
