@@ -3,7 +3,16 @@ module.exports = (sequelize, DataTypes) => {
 		"PostMedia",
 		{
 			media: DataTypes.STRING,
+			type: {
+				type: DataTypes.STRING,
+				allowNull: false,
+				defaultValue: "img",
+				validate: {
+					isIn: [["img", "video"]],
+				},
+			},
 		},
+
 		{
 			underscored: true,
 		}

@@ -101,12 +101,6 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: false,
 			},
 		});
-		User.hasMany(models.PostMedia, {
-			foreignKey: {
-				name: "userId",
-				allowNull: false,
-			},
-		});
 		User.hasMany(models.Reel, {
 			foreignKey: {
 				name: "userId",
