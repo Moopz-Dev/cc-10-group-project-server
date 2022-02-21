@@ -21,7 +21,7 @@ exports.getAllReels = async (req, res, next) => {
             const followers = await Follow.findAll({
                 where: { followTarget: req.user.id },
                 raw: true,
-                attributes: ['follower'],
+                attributes: ['followerId'],
             });
 
             let friends = await Follow.findAll({
@@ -77,7 +77,7 @@ exports.getUserReels = async (req, res, next) => {
             const followers = await Follow.findAll({
                 where: { followTarget: req.user.id },
                 raw: true,
-                attributes: ['follower'],
+                attributes: ['followerId'],
             });
 
             let friends = await Follow.findAll({

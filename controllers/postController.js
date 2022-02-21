@@ -21,7 +21,7 @@ exports.getAllPosts = async (req, res, next) => {
             const followers = await Follow.findAll({
                 where: { followTargetId: req.user.id },
                 raw: true,
-                attribute: ['follower'],
+                attribute: ['followerId'],
             });
 
             let friends = await Follow.findAll({
@@ -80,7 +80,7 @@ module.exports.getUserPosts = async (req, res, next) => {
             const followers = await Follow.findAll({
                 where: { followTargetId: req.user.id },
                 raw: true,
-                attribute: ['follower'],
+                attribute: ['followerId'],
             });
 
             let friends = await Follow.findAll({
