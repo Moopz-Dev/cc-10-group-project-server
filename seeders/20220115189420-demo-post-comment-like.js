@@ -25,7 +25,7 @@ module.exports = {
                 },
                 {
                     user_id: 3,
-                    post_id: 4,
+                    post_comment_id: 4,
                     created_at: new Date(),
                     updated_at: new Date(),
                 },
