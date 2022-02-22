@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: false,
 				defaultValue: "img",
 				validate: {
-					isIn: [["image", "video"]],
+					isIn: [["img", "video"]],
 				},
 			},
 		},
