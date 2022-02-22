@@ -4,6 +4,7 @@ const {
 	authenticateUser,
 	authenticateAdminOrUser,
 } = require("../middlewares/authenticate");
+const upload = require("../middlewares/upload");
 const router = express.Router();
 
 router.get("/stories/all", authenticateUser, storyController.getAllStories);
@@ -12,7 +13,12 @@ router.get(
 	authenticateUser,
 	storyController.getUserStories
 );
-router.post("/stories/", authenticateUser, storyController.createStory);
+router.post(
+	"/stories/",
+	authenticateUser,
+	upload.array("media", 9),
+	storyController.createStory
+);
 router.patch("/stories/:id", authenticateUser, storyController.updateStory);
 router.delete("/stories/:id", authenticateUser, storyController.deleteStory);
 
