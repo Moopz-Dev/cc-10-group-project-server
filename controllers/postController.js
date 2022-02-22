@@ -63,6 +63,7 @@ exports.getAllPosts = async (req, res, next) => {
 					model: PostMedia,
 				},
 			],
+			order: [["createdAt", "DESC"]],
 		});
 		res.status(200).json(posts);
 	} catch (err) {

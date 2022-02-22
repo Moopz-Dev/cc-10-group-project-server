@@ -106,7 +106,22 @@ exports.getUserReels = async (req, res, next) => {
 				message: "Only friends can view your target, or they do not exist",
 			});
 		}
-		const target = await Reel.findAll({ where: { id: userId } });
+		const target = await Reel.findAll({
+			where: { id: userId },
+			include: [
+				{
+					model: ReelLike,
+				},
+				{
+					model: ReelComment,
+					include: { model: ReelCommentLike },
+				},
+				{
+					model: User,
+					attributes: ["id", "username", "profileImg"],
+				},
+			],
+		});
 		res.status(200).json(target);
 	} catch (error) {
 		next(error);
@@ -140,6 +155,7 @@ exports.createReel = async (req, res, next) => {
 		const reel = await Reel.create(
 			{
 				message: req.body.message,
+				song: req.body.song,
 				media: result.secure_url,
 				userId: user.id,
 				type,
