@@ -20,7 +20,7 @@ exports.getAllStories = async (req, res, next) => {
             const followers = await Follow.findAll({
                 where: { followTargetId: req.user.id },
                 raw: true,
-                attribute: ['follower'],
+                attribute: ['followerId'],
             });
 
             let friends = await Follow.findAll({
@@ -37,10 +37,13 @@ exports.getAllStories = async (req, res, next) => {
             });
             targets = [...publicUsers, ...friends];
         }
+        let yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
 
         const stories = await Story.findAll({
             where: {
                 userId: targets.map((item) => item.id),
+                updatedAt: { [Op.gte]: yesterday },
             },
             include: [
                 {
@@ -76,7 +79,7 @@ exports.getUserStories = async (req, res, next) => {
             const followers = await Follow.findAll({
                 where: { followTargetId: req.user.id },
                 raw: true,
-                attributes: ['follower'],
+                attributes: ['followerId'],
             });
 
             let friends = await Follow.findAll({
@@ -93,7 +96,7 @@ exports.getUserStories = async (req, res, next) => {
             });
             targets = [...publicUsers, ...friends];
         }
-        // console.log(targets);
+
         const canView = targets.filter((item) => item.id == userId);
 
         if (canView.length === 0) {
@@ -102,7 +105,16 @@ exports.getUserStories = async (req, res, next) => {
                     'Only friends can view your target, or they do not exist',
             });
         }
-        const target = await Story.findAll({ where: { userId } });
+
+        let yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        const target = await Story.findAll({
+            where: {
+                userId,
+                updatedAt: { [Op.gte]: yesterday },
+            },
+        });
         res.status(200).json(target);
     } catch (error) {
         next(error);
