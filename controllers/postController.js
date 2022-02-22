@@ -14,7 +14,6 @@ const cloudinary = require("cloudinary").v2;
 const uploadPromise = util.promisify(cloudinary.uploader.upload);
 
 exports.getAllPosts = async (req, res, next) => {
-<<<<<<< HEAD
 	try {
 		const user = await User.findOne({ where: { id: req.user.id } });
 		const publicUsers = await User.findAll({
@@ -28,21 +27,6 @@ exports.getAllPosts = async (req, res, next) => {
 				raw: true,
 				attribute: ["follower"],
 			});
-=======
-    try {
-        const user = await User.findOne({ where: { id: req.user.id } });
-        const publicUsers = await User.findAll({
-            where: { publicStatus: 'PUBLIC' },
-            raw: true,
-        });
-        let targets = publicUsers;
-        if (user) {
-            const followers = await Follow.findAll({
-                where: { followTargetId: req.user.id },
-                raw: true,
-                attributes: ['followerId'],
-            });
->>>>>>> fffb4b3f7f295cbaea575e9f39be8faf89aa3342
 
 			let friends = await Follow.findAll({
 				where: {
@@ -91,7 +75,6 @@ module.exports.getUserPosts = async (req, res, next) => {
 		const user = await User.findOne({ where: { id: req.user.id } });
 		const { userId } = req.params;
 
-<<<<<<< HEAD
 		const publicUsers = await User.findAll({
 			where: { publicStatus: "PUBLIC" },
 			raw: true,
@@ -103,19 +86,6 @@ module.exports.getUserPosts = async (req, res, next) => {
 				raw: true,
 				attribute: ["follower"],
 			});
-=======
-        const publicUsers = await User.findAll({
-            where: { publicStatus: 'PUBLIC' },
-            raw: true,
-        });
-        let targets = publicUsers;
-        if (user) {
-            const followers = await Follow.findAll({
-                where: { followTargetId: req.user.id },
-                raw: true,
-                attributes: ['followerId'],
-            });
->>>>>>> fffb4b3f7f295cbaea575e9f39be8faf89aa3342
 
 			let friends = await Follow.findAll({
 				where: {
