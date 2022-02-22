@@ -188,7 +188,7 @@ exports.createReel = async (req, res, next) => {
 			return res.status(400).json({ message: "this user does not exist." });
 		}
 		const reel = await Reel.create({ message, song, media, userId: user.id });
-		const returnReel = Reel.findOne({
+		const returnReel = await Reel.findOne({
 			where: { id: reel.id },
 			include: [
 				{
