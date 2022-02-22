@@ -129,56 +129,83 @@ exports.getUserReels = async (req, res, next) => {
 };
 
 exports.createReel = async (req, res, next) => {
-	const transaction = await sequelize.transaction();
-	// console.log(req.body);
-	// console.log(req.body.message);
-	// console.log(req.files);
+	// const transaction = await sequelize.transaction();
+	// try {
+	// 	if (!req.body.message) {
+	// 		return res.status(400).json({ message: "Message cannot be empty." });
+	// 	}
+	// 	if (req.files.length === 0) {
+	// 		return res
+	// 			.status(400)
+	// 			.json({ message: "At least one media is required." });
+	// 	}
+	// 	const user = await User.findOne({ where: { id: req.user.id } });
+	// 	if (!user) {
+	// 		return res.status(400).json({ message: "this user does not exist." });
+	// 	}
+	// 	result = await uploadPromise(
+	// 		req.files[0].path,
+	// 		(options = { resource_type: "auto" })
+	// 	);
+	// 	console.log("aaaaaaaaaaaaaa");
+	// 	const type = result.resource_type === "image" ? "img" : "video";
+	// 	const reel = await Reel.create(
+	// 		{
+	// 			message: req.body.message,
+	// 			song: req.body.song,
+	// 			media: result.secure_url,
+	// 			userId: user.id,
+	// 			type,
+	// 		},
+	// 		{ transaction }
+	// 	);
+	// 	fs.unlinkSync(req.files[0].path);
+
+	// 	await transaction.commit();
+
+	// 	const returnReel = await Reel.findOne({
+	// 		where: { id: reel.id },
+	// 		attributes: { exclude: ["createdAt", "updatedAt"] },
+	// 		include: [
+	// 			{
+	// 				model: User,
+	// 				attributes: ["username", "profileImg", "publicStatus"],
+	// 			},
+	// 		],
+	// 	});
+	// 	res.status(201).json({ story: returnReel });
+	// } catch (error) {
+	// 	// await transaction.rollback();
+	// 	next(error);
+	// }
 	try {
-		if (!req.body.message) {
-			return res.status(400).json({ message: "Message cannot be empty." });
-		}
-		if (req.files.length === 0) {
-			return res
-				.status(400)
-				.json({ message: "At least one media is required." });
+		const { message, song, media } = req.body;
+		if (!message || !song || !media) {
+			return res.status(400).json({ message: "some parameters are missing." });
 		}
 		const user = await User.findOne({ where: { id: req.user.id } });
 		if (!user) {
 			return res.status(400).json({ message: "this user does not exist." });
 		}
-		result = await uploadPromise(
-			req.files[0].path,
-			(options = { resource_type: "auto" })
-		);
-		console.log("aaaaaaaaaaaaaa");
-		const type = result.resource_type === "image" ? "img" : "video";
-		const reel = await Reel.create(
-			{
-				message: req.body.message,
-				song: req.body.song,
-				media: result.secure_url,
-				userId: user.id,
-				type,
-			},
-			{ transaction }
-		);
-		fs.unlinkSync(req.files[0].path);
-
-		await transaction.commit();
-
-		const returnReel = await Reel.findOne({
+		const reel = await Reel.create({ message, song, media, userId: user.id });
+		const returnReel = Reel.findOne({
 			where: { id: reel.id },
-			attributes: { exclude: ["createdAt", "updatedAt"] },
 			include: [
 				{
+					model: ReelLike,
+				},
+				{
+					model: ReelComment,
+					include: { model: ReelCommentLike },
+				},
+				{
 					model: User,
-					attributes: ["username", "profileImg", "publicStatus"],
+					attributes: ["id", "username", "profileImg"],
 				},
 			],
 		});
-		res.status(201).json({ story: returnReel });
+		res.status(201).json(returnReel);
 	} catch (error) {
-		// await transaction.rollback();
 		next(error);
 	}
 };

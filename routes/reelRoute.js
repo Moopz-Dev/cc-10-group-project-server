@@ -13,12 +13,13 @@ router.get(
 	authenticateUser,
 	reelController.getUserReels
 );
-router.post(
-	"/reels/",
-	authenticateUser,
-	upload.array("media", 9),
-	reelController.createReel
-);
+// router.post(
+// 	"/reels/",
+// 	authenticateUser,
+// 	upload.array("media", 9),
+// 	reelController.createReel
+// );
+router.post("/reels/", authenticateUser, reelController.createReel);
 router.patch("/reels/:id", authenticateUser, reelController.updateReel);
 router.delete("/reels/:id", authenticateUser, reelController.deleteReel);
 
