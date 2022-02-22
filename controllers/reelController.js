@@ -23,7 +23,7 @@ exports.getAllReels = async (req, res, next) => {
 		let targets = publicUsers;
 		if (user) {
 			const followers = await Follow.findAll({
-				where: { followTarget: req.user.id },
+				where: { followTargetId: req.user.id },
 				raw: true,
 				attributes: ["followerId"],
 			});
@@ -79,7 +79,7 @@ exports.getUserReels = async (req, res, next) => {
 		let targets = publicUsers;
 		if (user) {
 			const followers = await Follow.findAll({
-				where: { followTarget: req.user.id },
+				where: { followTargetId: req.user.id },
 				raw: true,
 				attributes: ["followerId"],
 			});
