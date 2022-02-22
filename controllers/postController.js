@@ -143,10 +143,11 @@ exports.createPost = async (req, res, next) => {
 				(options = { resource_type: "auto" })
 			);
 			console.log(result);
+			const type = result.resource_type === "image" ? "img" : "video";
 			await PostMedia.create(
 				{
+					type,
 					media: result.secure_url,
-					type: result.resource_type,
 					postId: post.id,
 				},
 				{ transaction }

@@ -149,12 +149,13 @@ exports.createStory = async (req, res, next) => {
 			(options = { resource_type: "auto" })
 		);
 		console.log(result);
+		const type = result.resource_type === "image" ? "img" : "video";
 		const story = await Story.create(
 			{
 				media: result.secure_url,
-				type: result.resource_type,
 				userId: user.id,
 				message: req.body.message,
+				type,
 			},
 			{ transaction }
 		);
