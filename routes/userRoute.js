@@ -19,6 +19,7 @@ router.patch("/users/:id", authenticateUser, userController.updateProfile);
 router.patch(
 	"/users/:id/profileImg",
 	authenticateUser,
+	upload.array("media", 9),
 	userController.updateProfileImg
 );
 
