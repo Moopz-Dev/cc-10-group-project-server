@@ -14,7 +14,6 @@ router.get(
 );
 
 router.get("/users/all/", userController.getAllUsers);
-
 router.get("/users/:id", authenticateUser, userController.getUserProfile);
 router.patch("/users/:id", authenticateUser, userController.updateProfile);
 router.patch(

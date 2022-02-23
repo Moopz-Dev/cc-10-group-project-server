@@ -71,6 +71,35 @@ exports.getAllPosts = async (req, res, next) => {
 	}
 };
 
+exports.getMyPosts = async (req, res, next) => {
+	try {
+		const user = await User.findOne({ where: { id: req.user.id } });
+		const target = await Post.findAll({
+			where: { id: user.id },
+			include: [
+				{
+					model: PostLike,
+				},
+				{
+					model: PostComment,
+					include: { model: PostCommentLike },
+				},
+				{
+					model: User,
+					attributes: ["id", "username", "profileImg"],
+				},
+				{
+					model: PostMedia,
+				},
+			],
+			order: [["createdAt", "DESC"]],
+		});
+		res.status(200).json(target);
+	} catch (err) {
+		next(err);
+	}
+};
+
 module.exports.getUserPosts = async (req, res, next) => {
 	try {
 		const user = await User.findOne({ where: { id: req.user.id } });

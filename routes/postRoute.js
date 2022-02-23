@@ -8,6 +8,7 @@ const upload = require("../middlewares/upload");
 const router = express.Router();
 
 router.get("/posts/all", authenticateUser, postController.getAllPosts);
+router.get("/posts/me/", authenticateUser, postController.getMyPosts);
 router.get(
 	"/posts/user/:userId",
 	authenticateUser,
