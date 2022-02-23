@@ -2,6 +2,8 @@ const fs = require("fs");
 const cloudinary = require("cloudinary").v2;
 const { User } = require("../models");
 const { Op } = require("sequelize");
+const util = require("util");
+const uploadPromise = util.promisify(cloudinary.uploader.upload);
 
 exports.searchUser = async (req, res, next) => {
 	try {
@@ -84,24 +86,30 @@ exports.updateProfile = async (req, res, next) => {
 	}
 };
 
-exports.updateProfileImg = (req, res, next) => {
-	cloudinary.uploader.upload(req.file.path, async (err, result) => {
-		if (err) return next(err);
-
-		await User.update(
-			{ profileImg: result.secure_url },
-			{ where: { id: req.user.id } }
-		);
-
-		if (req.user.profileImg) {
-			const splited = req.user.profileImg.split("/");
-			cloudinary.uploader.destroy(splited[splited.length - 1].split(".")[0]);
+exports.updateProfileImg = async (req, res, next) => {
+	try {
+		// console.log(req.files);
+		if (!req.files) {
+			return res.status(400).json({ message: "new image file is required." });
+		}
+		const user = await User.findOne({ where: { id: req.user.id } });
+		if (!user) {
+			return res.status(400).json({ message: "this user does not exist." });
 		}
 
-		fs.unlinkSync(req.file.path);
-		res.json({
-			message: "upload profile image completed",
+		result = await uploadPromise(
+			req.files[0].path,
+			(options = { resource_type: "auto" })
+		);
+		console.log(result);
+		// const type = result.resource_type === "image" ? "img" : "video";
+		await user.update({
 			profileImg: result.secure_url,
 		});
-	});
+		fs.unlinkSync(req.files[0].path);
+
+		res.status(201).json({ user });
+	} catch (error) {
+		next(error);
+	}
 };
