@@ -99,7 +99,7 @@ exports.getUserStories = async (req, res, next) => {
 				where: { id: friends.map(item => item.followTargetId) },
 				raw: true,
 			});
-			targets = [...publicUsers, ...friends];
+			targets = [...publicUsers, ...friends, user];
 		}
 
 		const canView = targets.filter(item => item.id == userId);

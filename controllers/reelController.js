@@ -40,7 +40,7 @@ exports.getAllReels = async (req, res, next) => {
 				where: { id: friends.map(item => item.followTargetId) },
 				raw: true,
 			});
-			targets = [...publicUsers, ...friends];
+			targets = [...publicUsers, ...friends, user];
 		}
 
 		const reels = await Reel.findAll({
