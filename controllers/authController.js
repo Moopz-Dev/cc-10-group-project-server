@@ -134,7 +134,14 @@ exports.login = async (req, res, next) => {
 		});
 		return res
 			.status(200)
-			.json({ token, user: { username: user.username, role: user.role } });
+			.json({
+				token,
+				user: {
+					username: user.username,
+					role: user.role,
+					profileImg: user.profileImg,
+				},
+			});
 	} catch (err) {
 		next(err);
 	}
@@ -142,9 +149,9 @@ exports.login = async (req, res, next) => {
 
 exports.getMe = async (req, res, next) => {
 	try {
-		const { username, role, id } = req.user;
+		const { username, role, id, profileImg } = req.user;
 		res.status(200).json({
-			user: { username, role, id },
+			user: { username, role, id, profileImg },
 		});
 	} catch (err) {
 		next(err);

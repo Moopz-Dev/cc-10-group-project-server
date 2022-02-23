@@ -88,17 +88,18 @@ exports.updateProfile = async (req, res, next) => {
 
 exports.updateProfileImg = async (req, res, next) => {
 	try {
-		// console.log(req.files);
-		if (!req.files) {
-			return res.status(400).json({ message: "new image file is required." });
-		}
 		const user = await User.findOne({ where: { id: req.user.id } });
 		if (!user) {
 			return res.status(400).json({ message: "this user does not exist." });
 		}
+		if (!req.file) {
+			await user.update({ profileImg: null });
+			return res.status(200).json({ message: "profilePic removed" });
+		}
+		console.log(req.file);
 
 		result = await uploadPromise(
-			req.files[0].path,
+			req.file.path,
 			(options = { resource_type: "auto" })
 		);
 		console.log(result);
@@ -106,7 +107,7 @@ exports.updateProfileImg = async (req, res, next) => {
 		await user.update({
 			profileImg: result.secure_url,
 		});
-		fs.unlinkSync(req.files[0].path);
+		fs.unlinkSync(req.file.path);
 
 		res.status(201).json({ user });
 	} catch (error) {
