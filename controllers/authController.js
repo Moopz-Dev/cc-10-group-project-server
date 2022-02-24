@@ -141,6 +141,7 @@ exports.login = async (req, res, next) => {
 				email: user.email,
 				bio: user.bio,
 				phoneNumber: user.phoneNumber,
+				name: user.name,
 			},
 		});
 	} catch (err) {
@@ -150,10 +151,10 @@ exports.login = async (req, res, next) => {
 
 exports.getMe = async (req, res, next) => {
 	try {
-		const { username, role, id, profileImg, email, bio, phoneNumber } =
+		const { username, role, id, profileImg, email, bio, phoneNumber, name } =
 			req.user;
 		res.status(200).json({
-			user: { username, role, id, profileImg, email, bio, phoneNumber },
+			user: { username, role, id, profileImg, email, bio, phoneNumber, name },
 		});
 	} catch (err) {
 		next(err);
