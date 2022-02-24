@@ -75,7 +75,7 @@ exports.getMyPosts = async (req, res, next) => {
 	try {
 		const user = await User.findOne({ where: { id: req.user.id } });
 		const target = await Post.findAll({
-			where: { id: user.id },
+			where: { userId: user.id },
 			include: [
 				{
 					model: PostLike,
