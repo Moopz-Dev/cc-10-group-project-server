@@ -132,16 +132,17 @@ exports.login = async (req, res, next) => {
 		const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
 			expiresIn: 60 * 60 * 24 * 30 * 1000,
 		});
-		return res
-			.status(200)
-			.json({
-				token,
-				user: {
-					username: user.username,
-					role: user.role,
-					profileImg: user.profileImg,
-				},
-			});
+		return res.status(200).json({
+			token,
+			user: {
+				username: user.username,
+				role: user.role,
+				profileImg: user.profileImg,
+				email: user.email,
+				bio: user.bio,
+				phoneNumber: user.phoneNumber,
+			},
+		});
 	} catch (err) {
 		next(err);
 	}
@@ -149,9 +150,10 @@ exports.login = async (req, res, next) => {
 
 exports.getMe = async (req, res, next) => {
 	try {
-		const { username, role, id, profileImg } = req.user;
+		const { username, role, id, profileImg, email, bio, phoneNumber } =
+			req.user;
 		res.status(200).json({
-			user: { username, role, id, profileImg },
+			user: { username, role, id, profileImg, email, bio, phoneNumber },
 		});
 	} catch (err) {
 		next(err);
