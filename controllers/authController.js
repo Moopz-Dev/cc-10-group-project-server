@@ -142,6 +142,7 @@ exports.login = async (req, res, next) => {
 				bio: user.bio,
 				phoneNumber: user.phoneNumber,
 				name: user.name,
+				publicStatus: user.publicStatus,
 			},
 		});
 	} catch (err) {
@@ -151,10 +152,29 @@ exports.login = async (req, res, next) => {
 
 exports.getMe = async (req, res, next) => {
 	try {
-		const { username, role, id, profileImg, email, bio, phoneNumber, name } =
-			req.user;
+		const {
+			username,
+			role,
+			id,
+			profileImg,
+			email,
+			bio,
+			phoneNumber,
+			name,
+			publicStatus,
+		} = req.user;
 		res.status(200).json({
-			user: { username, role, id, profileImg, email, bio, phoneNumber, name },
+			user: {
+				username,
+				role,
+				id,
+				profileImg,
+				email,
+				bio,
+				phoneNumber,
+				name,
+				publicStatus,
+			},
 		});
 	} catch (err) {
 		next(err);

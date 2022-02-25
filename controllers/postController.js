@@ -281,18 +281,32 @@ exports.deletePost = async (req, res, next) => {
 		if (post.userId !== user.id) {
 			return res.status(403).json({ message: "Unauthorized request" });
 		}
+		// post , postcomment , postcommentlike, postlike good
 
 		await PostLike.destroy({ where: { postId: id } }, { transaction });
+		const comments = await PostComment.findAll(
+			{ where: { postId: id } }
+			// { raw: true }
+		);
+		// console.log(comments);
 		await PostCommentLike.destroy(
-			{ where: { postCommentId: { where: { postId: id } } } },
+			{
+				where: { postCommentId: comments.map(item => item.id) },
+			},
 			{ transaction }
 		);
+
+		// await PostCommentLike.destroy(
+		// 	{ where: { postCommentId: { postId: id } } },
+		// 	{ transaction }
+		// );
 		await PostComment.destroy({ where: { postId: id } }, { transaction });
+		await PostMedia.destroy({ where: { postId: id } }, { transaction });
 		await post.destroy({ transaction });
 		await transaction.commit();
 		res.status(204).json();
 	} catch (error) {
-		await transaction.rollback();
+		// await transaction.rollback();
 		next(error);
 	}
 };
