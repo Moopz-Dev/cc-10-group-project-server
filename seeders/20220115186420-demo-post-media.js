@@ -41,7 +41,7 @@ module.exports = {
 					updated_at: new Date(),
 				},
 				{
-					media: "https://picsum.photos/id/12/200/300",
+					media: "https://picsum.photos/id/80/200/300",
 					type: "img",
 					post_id: 3,
 					created_at: new Date(),
