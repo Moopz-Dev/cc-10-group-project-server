@@ -53,6 +53,10 @@ exports.getAllPosts = async (req, res, next) => {
 				},
 				{
 					model: PostComment,
+					include: {
+						model: User,
+						attributes: ["id", "username", "profileImg"],
+					},
 					include: { model: PostCommentLike },
 				},
 				{
@@ -82,6 +86,10 @@ exports.getMyPosts = async (req, res, next) => {
 				},
 				{
 					model: PostComment,
+					include: {
+						model: User,
+						attributes: ["id", "username", "profileImg"],
+					},
 					include: { model: PostCommentLike },
 				},
 				{
@@ -138,7 +146,30 @@ module.exports.getUserPosts = async (req, res, next) => {
 				message: "Only friends can view your target, or they do not exist",
 			});
 		}
-		const target = await Post.findAll({ where: { id: userId } });
+		const target = await Post.findAll({
+			where: { id: userId },
+			include: [
+				{
+					model: PostLike,
+				},
+				{
+					model: PostComment,
+					include: {
+						model: User,
+						attributes: ["id", "username", "profileImg"],
+					},
+					include: { model: PostCommentLike },
+				},
+				{
+					model: User,
+					attributes: ["id", "username", "profileImg"],
+				},
+				{
+					model: PostMedia,
+				},
+			],
+			order: [["createdAt", "DESC"]],
+		});
 		res.status(200).json(target);
 	} catch (err) {
 		next(err);
