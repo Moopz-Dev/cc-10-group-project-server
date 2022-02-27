@@ -210,7 +210,8 @@ exports.createPost = async (req, res, next) => {
 exports.updatePost = async (req, res, next) => {
 	const transaction = await sequelize.transaction();
 	try {
-		const { message, media } = req.body;
+		// const { message, media } = req.body;
+		const { message } = req.body;
 		const { id } = req.params;
 		const user = await User.findOne({ where: { id: req.user.id } });
 		if (!user) {
@@ -227,39 +228,39 @@ exports.updatePost = async (req, res, next) => {
 			return res.status(403).json({ message: "Unauthorized request" });
 		}
 
-		const postMedia = await PostMedia.findAll({ where: { postId: id } });
-		if (!postMedia) {
-			return res.status(400).json({ message: "this media does not exist." });
-		}
-		console.log(postMedia);
-		const newPostMedia = await postMedia.map((item, idx) => {
-			item.update(
-				{
-					media: media[idx].media,
-					type: media[idx].type,
-				},
-				{ transaction }
-			);
-		});
+		// const postMedia = await PostMedia.findAll({ where: { postId: id } });
+		// if (!postMedia) {
+		// 	return res.status(400).json({ message: "this media does not exist." });
+		// }
+		// console.log(postMedia);
+		// const newPostMedia = await postMedia.map((item, idx) => {
+		// 	item.update(
+		// 		{
+		// 			media: media[idx].media,
+		// 			type: media[idx].type,
+		// 		},
+		// 		{ transaction }
+		// 	);
+		// });
 
 		await post.update({ message }, { transaction });
 		await transaction.commit();
 
-		const returnPostMedia = await Post.findOne({
-			where: { id: post.id },
-			attributes: { exclude: ["createdAt", "updatedAt"] },
-			include: [
-				{
-					model: User,
-					attributes: ["username", "profileImg", "publicStatus"],
-				},
-				{
-					model: PostMedia,
-					attributes: ["media, type"],
-				},
-			],
-		});
-		res.status(200).json(returnPostMedia);
+		// const returnPostMedia = await Post.findOne({
+		// 	where: { id: post.id },
+		// 	attributes: { exclude: ["createdAt", "updatedAt"] },
+		// 	include: [
+		// 		{
+		// 			model: User,
+		// 			attributes: ["username", "profileImg", "publicStatus"],
+		// 		},
+		// 		{
+		// 			model: PostMedia,
+		// 			attributes: ["media, type"],
+		// 		},
+		// 	],
+		// });
+		res.status(200).json(post);
 	} catch (error) {
 		await transaction.rollback();
 		next(error);
