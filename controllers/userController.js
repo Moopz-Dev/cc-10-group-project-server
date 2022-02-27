@@ -61,7 +61,7 @@ exports.getUserProfile = async (req, res, next) => {
 
 exports.updateProfile = async (req, res, next) => {
 	try {
-		const { name, bio, username, email, phoneNumber } = req.body;
+		const { name, bio, username, email, phoneNumber, publicStatus } = req.body;
 		const { id } = req.params;
 		const user = await User.findOne({ where: { id: req.user.id } });
 		if (!user) {
@@ -78,7 +78,14 @@ exports.updateProfile = async (req, res, next) => {
 
 		const resultNewProfile = await User.findOne({
 			where: { id: user.id },
-			attributes: ["name", "bio", "username", "email", "phoneNumber"],
+			attributes: [
+				"name",
+				"bio",
+				"username",
+				"email",
+				"phoneNumber",
+				"publicStatus",
+			],
 		});
 		res.status(200).json(resultNewProfile);
 	} catch (err) {
