@@ -53,11 +53,10 @@ exports.getAllPosts = async (req, res, next) => {
 				},
 				{
 					model: PostComment,
-					include: {
-						model: User,
-						attributes: ["id", "username", "profileImg"],
-					},
-					include: { model: PostCommentLike },
+					include: [
+						{ model: User, attributes: ["id", "username", "profileImg"] },
+						{ model: PostCommentLike },
+					],
 				},
 				{
 					model: User,
@@ -86,11 +85,11 @@ exports.getMyPosts = async (req, res, next) => {
 				},
 				{
 					model: PostComment,
-					include: {
-						model: User,
-						attributes: ["id", "username", "profileImg"],
-					},
-					include: { model: PostCommentLike },
+
+					include: [
+						{ model: User, attributes: ["id", "username", "profileImg"] },
+						{ model: PostCommentLike },
+					],
 				},
 				{
 					model: User,
@@ -154,11 +153,10 @@ module.exports.getUserPosts = async (req, res, next) => {
 				},
 				{
 					model: PostComment,
-					include: {
-						model: User,
-						attributes: ["id", "username", "profileImg"],
-					},
-					include: { model: PostCommentLike },
+					include: [
+						{ model: User, attributes: ["id", "username", "profileImg"] },
+						{ model: PostCommentLike },
+					],
 				},
 				{
 					model: User,
